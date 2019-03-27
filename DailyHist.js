@@ -10,7 +10,7 @@ function(error){
 
 var initialize = function(data){
   var quizzes = data.map(function(d){ return d.quizes; });
-  var initial_day_data = getDayData(1, quizzes).sort();
+  var initial_day_data = getDayData(32, quizzes).sort();
   var percentage = function(d){
     return d.length/initial_day_data.length;
   }
@@ -46,7 +46,7 @@ var initialize = function(data){
   var bins = binMaker(initial_day_data)
   console.log(bins)
   var xAxis = d3.axisTop(xScale)
-                .ticks(bins.length + 1);
+                .tickValues([0,1,2,3,4,5,6,7,8,9,10]);
 
   var yScale = d3.scaleLinear()
                  .domain([0, d3.max(bins, function(d){ return percentage(d); })])
@@ -84,7 +84,10 @@ var initialize = function(data){
   svg.append('g')
      .attr('transform', 'translate(0,' + (screen.height - margins.bottom) + ')')
      .classed('xAxis', true)
-     .call(xAxis);
+     .call(xAxis)
+     .selectAll("text")
+     .style("text-anchor", "start")
+     .attr("transform", "translate(" + ((width/20) - 10) + ", 0)");;
 
   svg.append('g')
      .attr('transform', 'translate(0,' + (margins.top - margins.bottom) + ')')

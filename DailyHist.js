@@ -20,7 +20,7 @@ var initialize = function(data){
   };
   var margins = {
     top: screen.height*0.05,
-    left: screen.width*0.05,
+    left: screen.width*0.1,
     bottom: screen.height*0.05,
     right: screen.width*0.05
   };
@@ -32,19 +32,29 @@ var initialize = function(data){
               .attr('height', screen.height)
               .attr('width', screen.width)
 
+
+ console.log(d3.extent(initial_day_data))
   var xScale = d3.scaleLinear()
-                 .domain(d3.extent(initial_day_data))
+                 .domain([0, 11])
                  .nice()
-                 .range([0, width])
+                 .range([margins.left, width])
 
   var binMaker = d3.histogram()
                    .domain(xScale.domain())
-                   .thresholds(xScale.ticks(4));
+                   .thresholds(xScale.ticks(10));
 
   var bins = binMaker(initial_day_data)
+  console.log(bins)
+  var xAxis = d3.axisTop(xScale)
+                .ticks(bins.length + 1);
+
   var yScale = d3.scaleLinear()
                  .domain([0, d3.max(bins, function(d){ return percentage(d); })])
-                 .range([height, 0])
+                 .range([height, margins.top])
+
+  var yAxis = d3.axisRight(yScale)
+                .ticks(5);
+
   var plot = svg.append('g')
                 .classed('plot', true)
 
@@ -54,10 +64,32 @@ var initialize = function(data){
                             .append('rect')
                             .attr('x', function(d){ return xScale(d.x0); })
                             .attr('y', function(d){ return yScale(percentage(d))}) // Percentage returns the amount of values in each bin divided by the total amount of the array.
-                            .attr('width', function(d){ console.log(d.x1, d.x0, (xScale(d.x1 - 0.1) - xScale(d.x0))); return (xScale(d.x1 - 0.1) - xScale(d.x0))})
+                            .attr('width', function(d){ if (d.x1 == d.x0){
+                                                          return (xScale(d.x1) - xScale(d.x0))
+                                                        }
+
+                                                        return (xScale(d.x1 - 0.1) - xScale(d.x0))
+                                                      })
                             .attr('height', function(d){ return (height - yScale(percentage(d))); })
                             .attr('fill', 'blue');
+  // svg.append('g')
+  //     .attr('transform', 'translate(' + -margins.left / 2 + ',' + (h + margins.bottom + margins.top - (margins.bottom * 0.01)) + ')')
+  //     .classed('xAxis', true)
+  //     .call(xAxis)
+  //
+  // svg.append('g')
+  //     .attr('transform', 'translate(' + 0 + ',' + (margins.top - margins.bottom) + ')')
+  //     .classed('yAxis', true)
+  //     .call(yAxis)
+  svg.append('g')
+     .attr('transform', 'translate(0,' + (screen.height - margins.bottom) + ')')
+     .classed('xAxis', true)
+     .call(xAxis);
 
+  svg.append('g')
+     .attr('transform', 'translate(0,' + (margins.top - margins.bottom) + ')')
+     .classed('yAxis', true)
+     .call(yAxis);
 }
 
 var getDayData = function(day, quizzes){
